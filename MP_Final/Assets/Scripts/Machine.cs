@@ -2,28 +2,40 @@ using UnityEngine;
 
 public class Machine : MonoBehaviour, IDamageable
 {
-    public bool disabled;
+    public bool disabled = false;
+
+    public float moveSpeed = 2f;
+
+    public Vector3 moveDirection = Vector3.right;
 
     public AudioSource audioSource;
     public AudioClip hitSound;
+
+    void Update()
+    {
+        if (!disabled)
+        {
+            MoveMachine();
+        }
+    }
+
+    void MoveMachine()
+    {
+        transform.Translate(moveDirection.normalized * moveSpeed * Time.deltaTime);
+    }
 
     public void TakeHit(float force)
     {
         if (disabled) return;
 
-        Debug.Log("Machine hit with force: " + force);
-
-        audioSource.PlayOneShot(hitSound);
-
-        if (force > 1f)
+        if (audioSource != null && hitSound != null)
         {
-            DisableMachine();
+            audioSource.PlayOneShot(hitSound);
         }
-    }
 
-    void DisableMachine()
-    {
-        disabled = true;
-        Debug.Log("Machine disabled!");
+        if (force > 5f)
+        {
+            disabled = true;
+        }
     }
 }
