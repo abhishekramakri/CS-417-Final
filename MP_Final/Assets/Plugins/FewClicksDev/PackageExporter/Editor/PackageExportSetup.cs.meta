@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 54cfb406f23af9e47a990c4daa30a5d2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 310282
+  packageName: Package Exporter
+  packageVersion: 1.1.0
+  assetPath: Assets/Plugins/FewClicksDev/PackageExporter/Editor/PackageExportSetup.cs
+  uploadId: 823268

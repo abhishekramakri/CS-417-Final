@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class Machine : MonoBehaviour, IDamageable
 {
-    public bool disabled;
+    public bool disabled = false;
+
+    public float moveSpeed = 2f;
+
+    public Vector3 moveDirection = Vector3.right;
 
     [Header("Audio")]
     public AudioSource audioSource;
@@ -67,7 +71,11 @@ public class Machine : MonoBehaviour, IDamageable
 
     public void TakeHit(float force)
     {
-        if (disabled) return;
+        if (!disabled)
+        {
+            MoveMachine();
+        }
+    }
 
         if (audioSource != null && hitSound != null)
             audioSource.PlayOneShot(hitSound);

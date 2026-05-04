@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 093de2d141525934f99cccc6626c59cc
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 310282
+  packageName: Package Exporter
+  packageVersion: 1.1.0
+  assetPath: Assets/Plugins/FewClicksDev/PackageExporter/Versioning/changelog_PackageExporter.asset
+  uploadId: 823268
