@@ -1,57 +1,66 @@
 using UnityEngine;
-using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
 public class WorkerPatrol : MonoBehaviour
 {
     [Header("Waypoints")]
     public Transform[] waypoints;
+    public float moveSpeed = 2f;
     public float waypointReachDistance = 0.5f;
 
-    NavMeshAgent _agent;
+    [Header("Ground Snapping")]
+    public LayerMask groundLayers;
+    public float groundSnapOffset = 0f;
+
     int _currentWaypoint;
     bool _patrolling = true;
 
-    void Awake()
-    {
-        _agent = GetComponent<NavMeshAgent>();
-    }
-
     void Start()
     {
-        if (_patrolling && waypoints != null && waypoints.Length > 0)
-            _agent.SetDestination(waypoints[0].position);
+        SnapToGround();
     }
 
     void Update()
     {
         if (!_patrolling || waypoints == null || waypoints.Length == 0) return;
+        MoveTowardsWaypoint();
+        SnapToGround();
+    }
 
-        if (!_agent.pathPending && _agent.remainingDistance < waypointReachDistance)
+    void MoveTowardsWaypoint()
+    {
+        Transform target = waypoints[_currentWaypoint];
+        Vector3 toTarget = target.position - transform.position;
+        toTarget.y = 0f;
+        float dist = toTarget.magnitude;
+
+        if (dist < waypointReachDistance)
         {
             _currentWaypoint = (_currentWaypoint + 1) % waypoints.Length;
-            _agent.SetDestination(waypoints[_currentWaypoint].position);
+            return;
         }
+
+        Vector3 dir = toTarget / dist;
+        transform.position += dir * moveSpeed * Time.deltaTime;
+
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            Quaternion.LookRotation(dir),
+            8f * Time.deltaTime);
+    }
+
+    void SnapToGround()
+    {
+        Vector3 origin = transform.position + Vector3.up * 2f;
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 10f, groundLayers))
+            transform.position = hit.point + Vector3.up * groundSnapOffset;
     }
 
     public void SetWaypoints(Transform[] wps)
     {
         waypoints = wps;
         _currentWaypoint = 0;
-        if (_agent != null && _patrolling && wps != null && wps.Length > 0)
-            _agent.SetDestination(wps[0].position);
     }
 
-    public void StopPatrol()
-    {
-        _patrolling = false;
-        _agent.ResetPath();
-    }
-
-    public void ResumePatrol()
-    {
-        _patrolling = true;
-        if (waypoints != null && waypoints.Length > 0)
-            _agent.SetDestination(waypoints[_currentWaypoint].position);
-    }
+    public void StopPatrol()  => _patrolling = false;
+    public void ResumePatrol() => _patrolling = true;
 }

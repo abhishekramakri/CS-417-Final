@@ -1,10 +1,13 @@
 using UnityEngine;
-using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
-public class WorkerEnemy : MonoBehaviour
+[RequireComponent(typeof(WorkerPatrol))]
+public class WorkerEnemy : MonoBehaviour, IDamageable
 {
     public enum WorkerState { Patrolling, AttackingDam }
+
+    [Header("Health")]
+    public float maxHealth = 100f;
+    float _health;
 
     [Header("Dam Attack")]
     public Transform damTarget;
@@ -19,13 +22,19 @@ public class WorkerEnemy : MonoBehaviour
 
     WorkerState _state = WorkerState.Patrolling;
     WorkerPatrol _patrol;
-    NavMeshAgent _agent;
+    WorkerHealthBar _healthBar;
     float _damageTimer;
 
     void Awake()
     {
         _patrol = GetComponent<WorkerPatrol>();
-        _agent = GetComponent<NavMeshAgent>();
+        _healthBar = GetComponentInChildren<WorkerHealthBar>();
+        _health = maxHealth;
+    }
+
+    void Start()
+    {
+        _healthBar?.SetFill(1f);
     }
 
     void Update()
@@ -34,16 +43,25 @@ public class WorkerEnemy : MonoBehaviour
             MoveAndAttackDam();
     }
 
+    public void TakeHit(float force)
+    {
+        _health -= force;
+        _healthBar?.SetFill(_health / maxHealth);
+
+        if (_health <= 0f)
+            Die();
+    }
+
+    void Die()
+    {
+        Destroy(gameObject);
+    }
+
     public void OnDetected()
     {
         if (_state == WorkerState.AttackingDam) return;
         _state = WorkerState.AttackingDam;
         _patrol?.StopPatrol();
-
-        _agent.speed = alertMoveSpeed;
-
-        if (damTarget != null)
-            _agent.SetDestination(damTarget.position);
 
         if (workerRenderer != null)
             workerRenderer.material.color = alertColor;
@@ -53,11 +71,25 @@ public class WorkerEnemy : MonoBehaviour
     {
         if (damTarget == null) return;
 
-        float dist = Vector3.Distance(transform.position, damTarget.position);
+        Vector3 dir = damTarget.position - transform.position;
+        dir.y = 0f;
+        float dist = dir.magnitude;
+        dir.Normalize();
 
-        if (dist <= reachDistance)
+        if (dist > reachDistance)
         {
-            _agent.ResetPath();
+            transform.position += dir * alertMoveSpeed * Time.deltaTime;
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(dir),
+                10f * Time.deltaTime);
+
+            Vector3 origin = transform.position + Vector3.up * 2f;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 10f, _patrol.groundLayers))
+                transform.position = new Vector3(transform.position.x, hit.point.y + _patrol.groundSnapOffset, transform.position.z);
+        }
+        else
+        {
             _damageTimer += Time.deltaTime;
             if (_damageTimer >= damDamageInterval)
             {
@@ -68,4 +100,5 @@ public class WorkerEnemy : MonoBehaviour
     }
 
     public WorkerState State => _state;
+    public float HealthFraction => _health / maxHealth;
 }

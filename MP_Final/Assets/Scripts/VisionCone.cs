@@ -1,21 +1,17 @@
 using UnityEngine;
 
-// Cone detection using distance + angle check (more accurate than a trigger collider alone).
-// Requires a child GameObject with a cone mesh assigned to coneVisual for the pulse effect.
 [RequireComponent(typeof(AudioSource))]
 public class VisionCone : MonoBehaviour
 {
     [Header("Detection")]
     public float detectionRange = 8f;
-    [Tooltip("Full cone angle in degrees (e.g. 60 = 30 degrees each side of forward)")]
+    [Tooltip("Full cone angle in degrees (e.g. 60 = 30 each side of forward)")]
     public float detectionAngle = 60f;
-    public LayerMask playerLayer;
+    [Tooltip("Must match the Tag on your XR Rig / player root")]
     public string playerTag = "Player";
 
     [Header("Near-Miss Pulse")]
-    [Tooltip("Distance at which the cone starts pulsing to warn the player")]
     public float nearMissRange = 11f;
-    [Tooltip("Angle multiplier for the near-miss zone beyond the detection cone")]
     public float nearMissAngleMultiplier = 1.4f;
     public Transform coneVisual;
     public float pulseScaleAmount = 0.12f;
@@ -23,11 +19,12 @@ public class VisionCone : MonoBehaviour
 
     [Header("Feedback")]
     public AudioClip alertSound;
-    public ParticleSystem alertParticles;   // red exclamation burst above head
+    public ParticleSystem alertParticles;
 
     AudioSource _audio;
     Vector3 _coneBaseScale;
     bool _detected;
+    Transform _player;
 
     void Awake()
     {
@@ -38,24 +35,27 @@ public class VisionCone : MonoBehaviour
             _coneBaseScale = coneVisual.localScale;
     }
 
+    void Start()
+    {
+        // Find the player once by tag so we never need a LayerMask set up
+        GameObject playerObj = GameObject.FindWithTag(playerTag);
+        if (playerObj != null)
+            _player = playerObj.transform;
+        else
+            Debug.LogWarning($"VisionCone: No GameObject found with tag '{playerTag}'. " +
+                             "Set the Tag on your XR Rig to match.");
+    }
+
     void Update()
     {
         if (_detected) return;
+        if (_player == null) return;
 
-        // Broad phase: sphere cast to find the player
-        Collider[] hits = Physics.OverlapSphere(transform.position, nearMissRange, playerLayer);
-        if (hits.Length == 0)
-        {
-            SmoothResetCone();
-            return;
-        }
+        float dist  = Vector3.Distance(transform.position, _player.position);
+        float angle = Vector3.Angle(transform.forward, _player.position - transform.position);
 
-        Vector3 playerPos = hits[0].transform.position;
-        float dist = Vector3.Distance(transform.position, playerPos);
-        float angle = Vector3.Angle(transform.forward, playerPos - transform.position);
-
-        bool inDetectionCone = dist <= detectionRange && angle <= detectionAngle * 0.5f;
-        bool inNearMissZone = dist <= nearMissRange && angle <= detectionAngle * 0.5f * nearMissAngleMultiplier;
+        bool inDetectionCone = dist <= detectionRange  && angle <= detectionAngle * 0.5f;
+        bool inNearMissZone  = dist <= nearMissRange   && angle <= detectionAngle * 0.5f * nearMissAngleMultiplier;
 
         if (inDetectionCone)
             TriggerDetection();
@@ -79,6 +79,8 @@ public class VisionCone : MonoBehaviour
             coneVisual.localScale = _coneBaseScale * (1f + pulseScaleAmount * 2f);
 
         GetComponent<WorkerEnemy>()?.OnDetected();
+
+        Debug.Log($"VisionCone on {gameObject.name}: PLAYER DETECTED");
     }
 
     void PulseCone()
@@ -108,13 +110,13 @@ public class VisionCone : MonoBehaviour
     {
         int segments = 20;
         Vector3 prev = transform.position + Quaternion.AngleAxis(-angle * 0.5f, transform.up)
-            * transform.forward * range;
+                       * transform.forward * range;
         for (int i = 1; i <= segments; i++)
         {
             float t = (float)i / segments;
             float a = Mathf.Lerp(-angle * 0.5f, angle * 0.5f, t);
             Vector3 next = transform.position + Quaternion.AngleAxis(a, transform.up)
-                * transform.forward * range;
+                           * transform.forward * range;
             Gizmos.DrawLine(transform.position, next);
             Gizmos.DrawLine(prev, next);
             prev = next;
