@@ -74,7 +74,7 @@ public class PerimeterSpawner : MonoBehaviour
 
     void SpawnTwoObjects()
     {
-        HapticsManager.Instance.Pulse(0.1f, 0.05f);
+        // HapticsManager.Instance.Pulse(0.1f, 0.05f);
         if (prefabs == null || prefabs.Length == 0) return;
 
         for (int i = 0; i < 2; i++)

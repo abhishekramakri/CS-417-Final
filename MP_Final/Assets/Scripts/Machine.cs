@@ -9,7 +9,7 @@ public class Machine : MonoBehaviour, IDamageable
     public AudioClip hitSound;
 
     [Header("Movement (X-Z plane)")]
-    public Vector3 targetPosition = new Vector3(-1f, 2f, -10f);
+    public Vector3 targetPosition = new Vector3(-1f,4f, -10f);
     public float moveDuration = 10f;
 
     private Vector3 startPosition;
@@ -19,13 +19,13 @@ public class Machine : MonoBehaviour, IDamageable
     void OnEnable()
     {
         startPosition = transform.position;
-        startPosition.y = 2f;
+        startPosition.y = 4f;
         transform.position = startPosition;
 
         timer = 0f;
         isMoving = true;
+        // transform.Rotate(0f, 90f, 0f);
     }
-
     void Update()
     {
         if (disabled || !isMoving) return;
@@ -34,22 +34,29 @@ public class Machine : MonoBehaviour, IDamageable
         float t = Mathf.Clamp01(timer / moveDuration);
 
         Vector3 pos = Vector3.Lerp(startPosition, targetPosition, t);
-        pos.y = 2f;
+        pos.y = 4f;
 
         transform.position = pos;
 
-        Vector3 direction = (targetPosition - startPosition);
+        Vector3 direction = (targetPosition - transform.position);
         direction.y = 0f;
-
+        float rotationSpeed = 2f;
         if (direction.sqrMagnitude > 0.001f)
         {
-            transform.forward = direction.normalized;
-        }
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-        
+            // Add 90° offset
+            targetRotation *= Quaternion.Euler(0f, 270f, 0f);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+            );
+        }
         if (t >= 1f)
         {
-            transform.position = new Vector3(targetPosition.x, 2f, targetPosition.z);
+            transform.position = new Vector3(targetPosition.x, 4f, targetPosition.z);
 
             isMoving = false;
 

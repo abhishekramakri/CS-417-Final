@@ -3,38 +3,41 @@ using TMPro;
 
 public class ForestIntegrityUI : MonoBehaviour
 {
-    [Header("Reference to Spawner")]
     public PerimeterSpawner spawner;
-
-    [Header("UI Text (TMP)")]
     public TextMeshProUGUI integrityText;
 
     void Update()
     {
         if (spawner == null || integrityText == null) return;
 
-        integrityText.text = "Forest Integrity: " +
-            Mathf.RoundToInt(spawner.forestIntegrity) + "%";
-    }
+        int value = Mathf.RoundToInt(spawner.forestIntegrity);
 
-    void UpdateForestIntegrity()
-{
-    if (!waveActive) return;
+        // Change color based on health
+        if (value > 70)
+            integrityText.color = Color.green;
+        else if (value > 30)
+            integrityText.color = Color.yellow;
+        else
+            integrityText.color = Color.red;
 
-    float decay = activeMachines * decayRatePerMachine;
-    forestIntegrity -= decay * Time.deltaTime;
-    forestIntegrity = Mathf.Clamp(forestIntegrity, 0f, 100f);
-
-    // LOW integrity warning pulse
-    if (forestIntegrity < 30f)
-    {
-        HapticsManager.Instance.Pulse(0.2f, 0.1f);
-    }
-
-    // Integrity collapse burst
-    if (forestIntegrity <= 0f)
-    {
-        HapticsManager.Instance.Pulse(1.0f, 0.5f);
+        integrityText.text = $"Forest Integrity: {value}%";
     }
 }
-}
+
+// using UnityEngine;
+// using TMPro;
+
+// public class ForestIntegrityUI : MonoBehaviour
+// {
+//     public PerimeterSpawner spawner;
+//     public TextMeshProUGUI integrityText;
+
+//     void Update()
+//     {
+//         if (spawner == null || integrityText == null) return;
+
+//         integrityText.text =
+//             "Forest Integrity: " +
+//             Mathf.RoundToInt(spawner.forestIntegrity) + "%";
+//     }
+// }
