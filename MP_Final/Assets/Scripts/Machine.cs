@@ -25,6 +25,9 @@ public class Machine : MonoBehaviour, IDamageable
     public GameObject validHitObject;
     private GameObject lastHitObject;
 
+    private bool canTakeDamage = false;
+    public float spawnImmunityTime = 3f;
+
     void OnEnable()
     {
         startPosition = transform.position;
@@ -35,8 +38,18 @@ public class Machine : MonoBehaviour, IDamageable
         isMoving = true;
 
         renderers = GetComponentsInChildren<Renderer>();
+
+        canTakeDamage = false;
+        StartCoroutine(SpawnImmunity());
         // transform.Rotate(0f, 90f, 0f);
     }
+
+    System.Collections.IEnumerator SpawnImmunity()
+    {
+        yield return new WaitForSeconds(spawnImmunityTime);
+        canTakeDamage = true;
+    }
+
     void Update()
     {
         if (disabled || !isMoving) return;
@@ -80,6 +93,8 @@ public class Machine : MonoBehaviour, IDamageable
     {
         
          if (disabled) return;
+
+         if (!canTakeDamage) return;
 
         if (audioSource != null && hitSound != null)
             audioSource.PlayOneShot(hitSound);
