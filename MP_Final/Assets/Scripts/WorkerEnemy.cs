@@ -30,6 +30,9 @@ public class WorkerEnemy : MonoBehaviour, IDamageable
         _patrol = GetComponent<WorkerPatrol>();
         _healthBar = GetComponentInChildren<WorkerHealthBar>();
         _health = maxHealth;
+
+        if (workerRenderer == null)
+            workerRenderer = GetComponentInChildren<Renderer>();
     }
 
     void Start()
