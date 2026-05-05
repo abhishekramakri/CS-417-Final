@@ -95,6 +95,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2672587344073929106, guid: 0f618d9857064e241a7b14cb2123b5d8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6996425577394442169}
+    - targetCorrespondingSourceObject: {fileID: 2672587344073929106, guid: 0f618d9857064e241a7b14cb2123b5d8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1654710901627738223}
   m_SourcePrefab: {fileID: 100100000, guid: 0f618d9857064e241a7b14cb2123b5d8, type: 3}
 --- !u!1 &4971910433422484713 stripped
 GameObject:
@@ -114,7 +117,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Machine
   disabled: 0
+  moveSpeed: 2
+  moveDirection: {x: 1, y: 0, z: 0}
   audioSource: {fileID: 0}
   hitSound: {fileID: 0}
   targetPosition: {x: -1, y: -10, z: -10}
   moveDuration: 10
+--- !u!65 &-1654710901627738223
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4971910433422484713}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

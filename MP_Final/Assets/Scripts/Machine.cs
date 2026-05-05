@@ -20,6 +20,8 @@ public class Machine : MonoBehaviour, IDamageable
     private float timer;
     private bool isMoving = false;
 
+    private Renderer[] renderers;
+
     void OnEnable()
     {
         startPosition = transform.position;
@@ -28,6 +30,8 @@ public class Machine : MonoBehaviour, IDamageable
 
         timer = 0f;
         isMoving = true;
+
+        renderers = GetComponentsInChildren<Renderer>();
         // transform.Rotate(0f, 90f, 0f);
     }
     void Update()
@@ -71,17 +75,39 @@ public class Machine : MonoBehaviour, IDamageable
 
     public void TakeHit(float force)
     {
-        if (!disabled)
-        {
-            MoveMachine();
-        }
-    }
+        // if (!disabled)
+        // {
+        //     MoveMachine();
+        // }
+        
+         if (disabled) return;
 
         if (audioSource != null && hitSound != null)
             audioSource.PlayOneShot(hitSound);
 
-        if (force > 1f)
+        if (force > 0f)
             DisableMachine();
+    }
+
+    System.Collections.IEnumerator FallOver()
+    {
+        Quaternion startRot = transform.rotation;
+        Quaternion endRot = Quaternion.Euler(90f, startRot.eulerAngles.y, startRot.eulerAngles.z);
+
+        float t = 0f;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 2f;
+            transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+            yield return null;
+        }
+    }
+
+    System.Collections.IEnumerator DestroyAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Destroy(gameObject);
     }
 
     void DisableMachine()
@@ -89,7 +115,22 @@ public class Machine : MonoBehaviour, IDamageable
         disabled = true;
         isMoving = false;
 
-        Destroy(gameObject);
+        MachineStats.RegisterDestroyed();
+
+        // 🎨 turn red
+        foreach (Renderer r in renderers)
+        {
+            if (r.material != null)
+            {
+                r.material.SetColor("_BaseColor", Color.red);
+            }
+        }
+
+        // flip over
+        StartCoroutine(FallOver());
+
+        // destroy after delay
+        StartCoroutine(DestroyAfterDelay(2f));
     }
 }
 // using UnityEngine;
