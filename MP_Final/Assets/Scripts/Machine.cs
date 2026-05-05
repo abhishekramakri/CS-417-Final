@@ -22,6 +22,9 @@ public class Machine : MonoBehaviour, IDamageable
 
     private Renderer[] renderers;
 
+    public GameObject validHitObject;
+    private GameObject lastHitObject;
+
     void OnEnable()
     {
         startPosition = transform.position;
@@ -75,10 +78,6 @@ public class Machine : MonoBehaviour, IDamageable
 
     public void TakeHit(float force)
     {
-        // if (!disabled)
-        // {
-        //     MoveMachine();
-        // }
         
          if (disabled) return;
 
@@ -110,6 +109,13 @@ public class Machine : MonoBehaviour, IDamageable
         Destroy(gameObject);
     }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        lastHitObject = collision.gameObject;
+
+        Debug.Log("Machine collided with: " + lastHitObject.name);
+    }
+
     void DisableMachine()
     {
         disabled = true;
@@ -117,7 +123,7 @@ public class Machine : MonoBehaviour, IDamageable
 
         MachineStats.RegisterDestroyed();
 
-        // 🎨 turn red
+        // turn red
         foreach (Renderer r in renderers)
         {
             if (r.material != null)
@@ -133,32 +139,3 @@ public class Machine : MonoBehaviour, IDamageable
         StartCoroutine(DestroyAfterDelay(2f));
     }
 }
-// using UnityEngine;
-
-// public class Machine : MonoBehaviour, IDamageable
-// {
-//     public bool disabled;
-
-//     public AudioSource audioSource;
-//     public AudioClip hitSound;
-
-//     public void TakeHit(float force)
-//     {
-//         if (disabled) return;
-
-//         Debug.Log("Machine hit with force: " + force);
-
-//         audioSource.PlayOneShot(hitSound);
-
-//         if (force > 1f)
-//         {
-//             DisableMachine();
-//         }
-//     }
-
-//     void DisableMachine()
-//     {
-//         disabled = true;
-//         Debug.Log("Machine disabled!");
-//     }
-// }
